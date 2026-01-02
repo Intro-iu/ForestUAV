@@ -38,9 +38,11 @@ data/images/*
 results*.csv
 
 # Datasets -------------------------------------------------------------------------------------------------------------
+datasets/
 coco/
 coco128/
 VOC/
+kaggle.json
 
 coco2017labels-segments.zip
 test2017.zip
