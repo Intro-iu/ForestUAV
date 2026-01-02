@@ -44,7 +44,7 @@ uv run train.py \
     --cfg cfg/training/train.yaml \
     --data data/coco128.yaml \
     --epochs 300 \
-    --batch-size 16 \
+    --batch-size 8 \
     --img 640 \
     --device 0 \
     --name server_train_run \
