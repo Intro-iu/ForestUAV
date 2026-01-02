@@ -23,7 +23,9 @@ class BPS(nn.Module):
         
         self.fusion = nn.Conv2d(3 * out_channels, out_channels, kernel_size=1)
 
-        self.Sigmoid = nn.Sigmoid()
+        self.fusion = nn.Conv2d(3 * out_channels, out_channels, kernel_size=1)
+
+        self.act = nn.SiLU()
 
 
     def forward(self, x):
@@ -36,7 +38,7 @@ class BPS(nn.Module):
         x_cat = torch.cat([out1, out2, out3], dim=1)
 
         out_fusion = self.fusion(x_cat)
-        out_final = self.Sigmoid(out_fusion)
+        out_final = self.act(out_fusion)
 
         return out_final
 
@@ -74,7 +76,7 @@ class PMD_CFEM(nn.Module):
                 nn.BatchNorm2d(out_channels)
             )
         
-        self.Sigmoid = nn.Sigmoid()
+        self.act = nn.SiLU()
 
     def forward(self, x):
         identity = x
@@ -91,7 +93,7 @@ class PMD_CFEM(nn.Module):
         
         out += self.shortcut(identity)
         
-        return self.Sigmoid(out)
+        return self.act(out)
 
 class MP(nn.Module):
     def __init__(self, k=2):
@@ -157,7 +159,7 @@ class MSDS_FM(nn.Module):
             nn.SiLU()
         )
         
-        self.Sigmoid = nn.Sigmoid()
+        self.act = nn.SiLU()
 
         # 1x1 Conv projection if c1 != c2
         self.project = nn.Identity()
@@ -197,7 +199,7 @@ class MSDS_FM(nn.Module):
         # Original: return self.Sigmoid(final_out)
         # We need to change channels from c1 to c2.
         
-        return self.project(self.Sigmoid(final_out))
+        return self.project(self.act(final_out))
 
 # DDCA Module 
 class DDCA(nn.Module):
