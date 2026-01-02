@@ -352,7 +352,7 @@ def img2label_paths(img_paths):
 
 class LoadImagesAndLabels(Dataset):  # for training/testing
     def __init__(self, path, img_size=640, batch_size=16, augment=False, hyp=None, rect=False, image_weights=False,
-                 cache_images=False, single_cls=False, stride=32, pad=0.0, prefix=''):
+                 cache_images=False, single_cls=False, stride=32, pad=0.0, prefix='', limit=0):
         self.img_size = img_size
         self.augment = augment
         self.hyp = hyp
@@ -410,11 +410,23 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         self.shapes = np.array(shapes, dtype=np.float64)
         self.img_files = list(cache.keys())  # update
         self.label_files = img2label_paths(cache.keys())  # update
+        
+        # Apply Limit
+        if limit > 0:
+            limit = min(limit, len(self.img_files))
+            self.img_files = self.img_files[:limit]
+            self.label_files = self.label_files[:limit]
+            self.labels = self.labels[:limit]
+            self.shapes = self.shapes[:limit]
+            if len(self.segments) > 0: # handle segments if they exist
+                 self.segments = self.segments[:limit]
+            print(f"{prefix}Limiting dataset to first {limit} images due to --limit-train-images argument.")
+
         if single_cls:
             for x in self.labels:
                 x[:, 0] = 0
 
-        n = len(shapes)  # number of images
+        n = len(self.shapes)  # number of images
         bi = np.floor(np.arange(n) / batch_size).astype(int)  # batch index
         nb = bi[-1] + 1  # number of batches
         self.batch = bi  # batch index of image

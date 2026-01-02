@@ -46,6 +46,7 @@ uv run train.py \
     --data data/fire.yaml \
     --epochs 300 \
     --batch-size 8 \
+    --limit-train-images 1000 \
     --img 640 \
     --device 0 \
     --name server_train_run \
