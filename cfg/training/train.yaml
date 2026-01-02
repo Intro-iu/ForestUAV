@@ -1,0 +1,63 @@
+# parameters
+nc: 80  # number of classes
+depth_multiple: 1.0  # model depth multiple
+width_multiple: 1.0  # layer channel multiple
+
+# anchors
+anchors:
+  - [10,13, 16,30, 33,23]  # P3/8
+  - [30,61, 62,45, 59,119]  # P4/16
+  - [116,90, 156,198, 373,326]  # P5/32
+
+backbone:
+  # [from, number, module, args] c2
+  [
+    [-1, 1, BPS, [32]],
+    [-1, 1, BPS, [64]],
+    [-1, 1, PMD_CFEM, [64]],
+    [-1, 1, MP, []],
+    [-1, 1, PMD_CFEM, [128]], # 4
+
+    [-1, 1, MP, []],
+    [-1, 1, PMD_CFEM, [256]], # 6
+
+    [-1, 1, MP, []],
+    [-1, 1, PMD_CFEM, [512]], # 8
+
+  ]
+
+head:
+  [
+    [-1, 1, MSDS_FM, [256]], # 9
+    [-1, 1, BPS, [128]],
+
+    [-1, 1, nn.Upsample, [None, 2, 'nearest']], # 11
+    [6, 1, BPS, [128]], #12
+    [[-1, -2], 1, Concat, [1]], # 13
+
+    [-1, 1, PMD_CFEM, [128]], # 14
+    [-1, 1, BPS, [64]],
+
+    [-1, 1, nn.Upsample, [None, 2, 'nearest']], # 16
+    [4, 1, BPS, [64]], # 17
+    [[-1, -2], 1, Concat, [1]], # 18
+
+    [-1, 1, PMD_CFEM, [64]], # 19
+    
+    [-1, 1, Conv, [128, 3, 2, None, 1, nn.LeakyReLU(0.1)]], # 20
+    [[-1, 14], 1, Concat, [1]], # 21
+
+    [-1, 1, PMD_CFEM, [128]], # 22
+
+    [-1, 1, Conv, [256, 3, 2, None, 1, nn.LeakyReLU(0.1)]], # 23
+    [[-1, 9], 1, Concat, [1]], # 24
+
+    [-1, 1, PMD_CFEM, [256]], # 25
+
+    [19, 1, BPS, [128]],
+    [22, 1, BPS, [256]],
+    [25, 1, BPS, [512]],
+
+    [[26, 27, 28], 1, IDetect, [nc, anchors]],   # Detect(P3, P4, P5)
+
+  ]
