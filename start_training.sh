@@ -1,25 +1,30 @@
 #!/bin/bash
 
-# ForestUAV Training Entry Script
+# ForestUAV Training Entry Script (UV Version)
 
 # Stop on error
 set -e
 
 echo "========================================"
-echo "    ForestUAV Training Launcher"
+echo "    ForestUAV Training Launcher (UV)"
 echo "========================================"
 
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "Error: 'uv' command not found. Please install uv first."
+    echo "Curl: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
+fi
+
 # 1. Environment Setup
-echo "[1/3] Installing dependencies..."
-# Update pip just in case
-pip install --upgrade pip
-# Install requirements
-pip install -r requirements.txt
+echo "[1/3] Syncing environment..."
+# Sync dependencies from uv.lock/pyproject.toml
+uv sync
 
 # 2. Data Preparation
 echo "[2/3] Checking and downloading data..."
 if [ ! -d "coco128" ]; then
-    python download_coco128.py
+    uv run download_coco128.py
 else
     echo "Data directory 'coco128' found. Skipping download."
 fi
@@ -30,12 +35,11 @@ echo "Config: cfg/training/train.yaml"
 echo "Data:   data/coco128.yaml"
 echo "Device: 0 (GPU)"
 
-# Force UTF-8 encoding to avoid python print errors
+# Force UTF-8 encoding
 export PYTHONUTF8=1
 
-# Run training
-# Note: Adjusted batch-size to 16 for server (assuming better GPU), change if needed.
-python train.py \
+# Run training with uv
+uv run train.py \
     --weights "" \
     --cfg cfg/training/train.yaml \
     --data data/coco128.yaml \
