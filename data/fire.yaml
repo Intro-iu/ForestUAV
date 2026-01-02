@@ -3,9 +3,9 @@
 
 # Dataset path (relative to yolov7 directory)
 # Ensure you run 'prepare_fire_dataset.py' first
-train: datasets/NEWFireSmokeDataset_YoloModels/datasets/train/images
-val:   datasets/NEWFireSmokeDataset_YoloModels/datasets/test/images
-test:  datasets/NEWFireSmokeDataset_YoloModels/datasets/test/images
+train: datasets/NEWFireSmokeDataset_YoloModels/yolov7/train/images
+val:   datasets/NEWFireSmokeDataset_YoloModels/yolov7/valid/images
+test:  datasets/NEWFireSmokeDataset_YoloModels/yolov7/test/images
 
 # Classes
 nc: 3  # number of classes

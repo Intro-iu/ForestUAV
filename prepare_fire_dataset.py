@@ -27,13 +27,17 @@ def prepare_fire_dataset():
     # We will attempt to run the download script if found, or assume data is in a subfolder
     
     print("Checking for download script...")
-    download_script = target_dir / "Download_Dataset_v1.py" 
-    # Note: Filename guessed based on typical naming, user might need to adjust
+    download_script = target_dir / "DownloadFireDataset.py" 
     
     if download_script.exists():
         print(f"Found download script: {download_script}")
         print("Running download script...")
-        subprocess.run(["python", str(download_script)], cwd=target_dir)
+        # Run: python DownloadFireDataset.py yolov7 --base-dir .
+        subprocess.run(
+            ["python", "DownloadFireDataset.py", "yolov7", "--base-dir", "."], 
+            cwd=target_dir,
+            check=True
+        )
     else:
         print("Download script not found directly. Assuming data might be ready or requires manual step.")
         print(f"Please check content in {target_dir}")
