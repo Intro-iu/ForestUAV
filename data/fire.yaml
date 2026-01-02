@@ -2,9 +2,9 @@
 # https://www.kaggle.com/datasets/sayedgamal99/smoke-fire-detection-yolo
 
 # Dataset path (relative to yolov7 directory)
-train: datasets/kaggle_fire_dataset/train/images
-val:   datasets/kaggle_fire_dataset/valid/images
-test:  datasets/kaggle_fire_dataset/test/images
+train: datasets/kaggle_fire_dataset/data/train/images
+val:   datasets/kaggle_fire_dataset/data/val/images
+test:  datasets/kaggle_fire_dataset/data/test/images
 
 # Classes
 nc: 2  # 0: Fire, 1: Smoke
