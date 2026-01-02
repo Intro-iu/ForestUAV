@@ -7,5 +7,5 @@ val:   datasets/kaggle_fire_dataset/data/val/images
 test:  datasets/kaggle_fire_dataset/data/test/images
 
 # Classes
-nc: 2  # 0: Fire, 1: Smoke
-names: ['Fire', 'Smoke']
+nc: 2  # 1: Smoke, 2: Fire
+names: ['Smoke', 'Fire']
