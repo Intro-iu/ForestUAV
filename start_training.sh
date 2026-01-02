@@ -23,16 +23,17 @@ uv sync
 
 # 2. Data Preparation
 echo "[2/3] Checking and downloading data..."
-if [ ! -d "coco128" ]; then
-    uv run download_coco128.py
-else
-    echo "Data directory 'coco128' found. Skipping download."
+if [ -d "coco128" ]; then
+    echo "Old coco128 found, but we are switching to FIRE dataset."
 fi
 
+echo "Running fire dataset preparation..."
+uv run prepare_fire_dataset.py
+
 # 3. Training
-echo "[3/3] Starting YOLOv7 training..."
+echo "[3/3] Starting YOLOv7 training (Fire Dataset)..."
 echo "Config: cfg/training/train.yaml"
-echo "Data:   data/coco128.yaml"
+echo "Data:   data/fire.yaml"
 echo "Device: 0 (GPU)"
 
 # Force UTF-8 encoding
@@ -42,7 +43,7 @@ export PYTHONUTF8=1
 uv run train.py \
     --weights "" \
     --cfg cfg/training/train.yaml \
-    --data data/coco128.yaml \
+    --data data/fire.yaml \
     --epochs 300 \
     --batch-size 8 \
     --img 640 \
