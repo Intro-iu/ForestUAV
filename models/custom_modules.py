@@ -13,17 +13,18 @@ class Concat(nn.Module):
 
 # BPS 
 class BPS(nn.Module):
-    def __init__(self, in_channels, out_channels): 
+    def __init__(self, in_channels, out_channels, k=1, s=1): 
         super(BPS, self).__init__()
         self.bn = nn.BatchNorm2d(in_channels)
 
-        self.d_cv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1,  dilation=1)
-        self.d_cv2 = nn.Conv2d(in_channels, out_channels, kernel_size=5, padding=4,  dilation=2) 
-        self.d_cv3 = nn.Conv2d(in_channels, out_channels, kernel_size=7, padding=12, dilation=4) 
+        # Apply stride 's' to the parallel branches to reduce computation resolution immediately
+        self.d_cv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=s, padding=1,  dilation=1)
+        self.d_cv2 = nn.Conv2d(in_channels, out_channels, kernel_size=5, stride=s, padding=4,  dilation=2) 
+        self.d_cv3 = nn.Conv2d(in_channels, out_channels, kernel_size=7, stride=s, padding=12, dilation=4) 
         
-        self.fusion = nn.Conv2d(3 * out_channels, out_channels, kernel_size=1)
-
-        self.fusion = nn.Conv2d(3 * out_channels, out_channels, kernel_size=1)
+        # Fusion layer uses kernel size 'k', stride 1 (since downsampling happened above)
+        # Auto-padding: k // 2
+        self.fusion = nn.Conv2d(3 * out_channels, out_channels, kernel_size=k, padding=k // 2)
 
         self.act = nn.SiLU()
 

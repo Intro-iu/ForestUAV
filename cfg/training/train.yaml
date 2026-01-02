@@ -1,5 +1,5 @@
 # parameters
-nc: 80  # number of classes
+nc: 2  # number of classes
 depth_multiple: 1.0  # model depth multiple
 width_multiple: 1.0  # layer channel multiple
 
@@ -12,8 +12,8 @@ anchors:
 backbone:
   # [from, number, module, args] c2
   [
-    [-1, 1, BPS, [32]],
-    [-1, 1, BPS, [64]],
+    [-1, 1, BPS, [32, 1, 2]], # Layer 0: 32ch, k=1, s=2 (Dowsample)
+    [-1, 1, BPS, [64, 1, 2]], # Layer 1: 64ch, k=1, s=2 (Downsample)
     [-1, 1, PMD_CFEM, [64]],
     [-1, 1, MP, []],
     [-1, 1, PMD_CFEM, [128]], # 4
