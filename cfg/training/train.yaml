@@ -12,8 +12,8 @@ anchors:
 backbone:
   # [from, number, module, args] c2
   [
-    [-1, 1, BPS, [32, 1, 2]], # Layer 0: 32ch, k=1, s=2 (Dowsample)
-    [-1, 1, BPS, [64, 1, 2]], # Layer 1: 64ch, k=1, s=2 (Downsample)
+    [-1, 1, BPS, [32, 3, 2]], # 0-P1/2
+    [-1, 1, BPS, [64, 3, 2]], # 1-P2/4
     [-1, 1, PMD_CFEM, [64]],
     [-1, 1, MP, []],
     [-1, 1, PMD_CFEM, [128]], # 4
@@ -44,12 +44,12 @@ head:
 
     [-1, 1, PMD_CFEM, [64]], # 19
     
-    [-1, 1, Conv, [128, 3, 2, None, 1, nn.LeakyReLU(0.1)]], # 20
+    [-1, 1, BPS, [128, 3, 2]], # 20
     [[-1, 14], 1, Concat, [1]], # 21
 
     [-1, 1, PMD_CFEM, [128]], # 22
 
-    [-1, 1, Conv, [256, 3, 2, None, 1, nn.LeakyReLU(0.1)]], # 23
+    [-1, 1, BPS, [256, 3, 2]], # 23
     [[-1, 9], 1, Concat, [1]], # 24
 
     [-1, 1, PMD_CFEM, [256]], # 25
