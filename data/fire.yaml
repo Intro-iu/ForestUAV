@@ -1,12 +1,11 @@
-# NEW Fire and Smoke Dataset
-# https://github.com/CostiCatargiu/NEWFireSmokeDataset_YoloModels
+# Kaggle Dataset: sayedgamal99/smoke-fire-detection-yolo
+# https://www.kaggle.com/datasets/sayedgamal99/smoke-fire-detection-yolo
 
 # Dataset path (relative to yolov7 directory)
-# Ensure you run 'prepare_fire_dataset.py' first
-train: datasets/NEWFireSmokeDataset_YoloModels/yolov7/train/images
-val:   datasets/NEWFireSmokeDataset_YoloModels/yolov7/valid/images
-test:  datasets/NEWFireSmokeDataset_YoloModels/yolov7/test/images
+train: datasets/kaggle_fire_dataset/train/images
+val:   datasets/kaggle_fire_dataset/valid/images
+test:  datasets/kaggle_fire_dataset/test/images
 
 # Classes
-nc: 3  # number of classes
-names: ['fire', 'smoke', 'other']
+nc: 2  # 0: Fire, 1: Smoke
+names: ['Fire', 'Smoke']

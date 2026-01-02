@@ -7,41 +7,40 @@ def prepare_fire_dataset():
     root = Path("datasets")
     root.mkdir(exist_ok=True)
     
-    repo_url = "https://github.com/CostiCatargiu/NEWFireSmokeDataset_YoloModels.git"
-    target_dir = root / "NEWFireSmokeDataset_YoloModels"
+    dataset_name = "sayedgamal99/smoke-fire-detection-yolo"
+    target_dir = root / "kaggle_fire_dataset"
     
-    # 2. Clone the repository
+    print(f"Preparing to download from Kaggle: {dataset_name}")
+    print("NOTE: You must have 'kaggle.json' configured in ~/.kaggle/ on the server!")
+    
+    # 2. Check/Install kaggle
+    try:
+        import kaggle
+    except ImportError:
+        print("Installing kaggle library...")
+        subprocess.run(["pip", "install", "kaggle"], check=True)
+
+    # 3. Download and Unzip
     if not target_dir.exists():
-        print(f"Cloning {repo_url}...")
+        target_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Downloading {dataset_name}...")
         try:
-            subprocess.run(["git", "clone", repo_url, str(target_dir)], check=True)
-            print("Repository cloned successfully.")
+            # kaggle datasets download -d sayedgamal99/smoke-fire-detection-yolo -p datasets/kaggle_fire_dataset --unzip
+            subprocess.run([
+                "kaggle", "datasets", "download", 
+                "-d", dataset_name, 
+                "-p", str(target_dir), 
+                "--unzip"
+            ], check=True)
+            print("Dataset downloaded and extracted successfully.")
         except subprocess.CalledProcessError as e:
-            print(f"Failed to clone repository: {e}")
+            print(f"Failed to download dataset: {e}")
+            print("Did you place your 'kaggle.json' in ~/.kaggle/?")
             return
     else:
-        print(f"Directory {target_dir} already exists. Skipping clone.")
+        print(f"Directory {target_dir} already exists. Skipping download.")
 
-    # 3. Check for dataset content
-    # Based on repo description, it might contain a download script or the data itself
-    # We will attempt to run the download script if found, or assume data is in a subfolder
-    
-    print("Checking for download script...")
-    download_script = target_dir / "DownloadFireDataset.py" 
-    
-    if download_script.exists():
-        print(f"Found download script: {download_script}")
-        print("Running download script...")
-        # Run: python DownloadFireDataset.py yolov7 --base-dir .
-        subprocess.run(
-            ["python", "DownloadFireDataset.py", "yolov7", "--base-dir", "."], 
-            cwd=target_dir,
-            check=True
-        )
-    else:
-        print("Download script not found directly. Assuming data might be ready or requires manual step.")
-        print(f"Please check content in {target_dir}")
-
+    # 4. Configure paths
     print("\nDataset preparation setup complete.")
     print(f"Config file created at: data/fire.yaml")
     print("Use this config for training: --data data/fire.yaml")
