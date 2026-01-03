@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 from models.common import Conv
 
 class Concat(nn.Module):
@@ -17,16 +18,17 @@ class BPS(nn.Module):
         super(BPS, self).__init__()
 
         mid_channels = c2 // 4
+        g = math.gcd(c1, mid_channels)
 
-        self.weight = nn.Parameter(torch.randn(mid_channels, c1, 3, 3))
+        self.weight = nn.Parameter(torch.randn(mid_channels, c1 // g, 3, 3))
         self.bias = nn.Parameter(torch.zeros(mid_channels))
         nn.init.kaiming_normal_(self.weight, mode='fan_out', nonlinearity='relu')
 
         self.bn = nn.BatchNorm2d(c1)
 
-        self.d_cv1 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=1, dilation=1)
-        self.d_cv2 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=2, dilation=2) 
-        self.d_cv3 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=4, dilation=4)
+        self.d_cv1 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=1, dilation=1, stride=s, groups=g)
+        self.d_cv2 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=2, dilation=2, stride=s, groups=g) 
+        self.d_cv3 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=4, dilation=4, stride=s, groups=g)
 
         self.d_cv1.weight = self.weight
         self.d_cv2.weight = self.weight
@@ -37,7 +39,7 @@ class BPS(nn.Module):
         self.d_cv3.bias   = self.bias
         
         # Fusion layer with optional downsampling
-        self.fusion = nn.Conv2d(3 * mid_channels, c2, kernel_size=k, stride=s, padding=k//2, bias=False)
+        self.fusion = nn.Conv2d(3 * mid_channels, c2, kernel_size=k, stride=1, padding=k//2, bias=False)
         self.bn_fusion = nn.BatchNorm2d(c2)
 
         self.act = nn.SiLU()
@@ -64,8 +66,9 @@ class PMD_CFEM(nn.Module):
 
         # 如果未指定中间通道数，默认缩小一点以减少计算量
         mid_channels = c2 // 4
+        g = math.gcd(c1, mid_channels)
 
-        self.weight = nn.Parameter(torch.randn(mid_channels, c1, 3, 3))
+        self.weight = nn.Parameter(torch.randn(mid_channels, c1 // g, 3, 3))
         self.bias = nn.Parameter(torch.zeros(mid_channels))
         nn.init.kaiming_normal_(self.weight, mode='fan_out', nonlinearity='relu')
 
@@ -75,9 +78,9 @@ class PMD_CFEM(nn.Module):
         self.SiLU = nn.SiLU()
 
         # 2. 并行扩张卷积分支 (保持尺寸不变)
-        self.d_cv1 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=1,  dilation=1)
-        self.d_cv2 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=2,  dilation=2) 
-        self.d_cv3 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=4,  dilation=4) 
+        self.d_cv1 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=1,  dilation=1, groups=g)
+        self.d_cv2 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=2,  dilation=2, groups=g) 
+        self.d_cv3 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=4,  dilation=4, groups=g) 
 
         self.d_cv1.weight = self.weight
         self.d_cv2.weight = self.weight
