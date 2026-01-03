@@ -15,14 +15,29 @@ class Concat(nn.Module):
 class BPS(nn.Module):
     def __init__(self, c1, c2, k=1, s=1): 
         super(BPS, self).__init__()
+
+        mid_channels = c2 // 4
+
+        self.weight = nn.Parameter(torch.randn(mid_channels, c1, 3, 3))
+        self.bias = nn.Parameter(torch.zeros(mid_channels))
+        nn.init.kaiming_normal_(self.weight, mode='fan_out', nonlinearity='relu')
+
         self.bn = nn.BatchNorm2d(c1)
 
-        self.d_cv1 = nn.Conv2d(c1, c2, kernel_size=3, padding=1,  dilation=1)
-        self.d_cv2 = nn.Conv2d(c1, c2, kernel_size=5, padding=4,  dilation=2) 
-        self.d_cv3 = nn.Conv2d(c1, c2, kernel_size=7, padding=12, dilation=4) 
+        self.d_cv1 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=1, dilation=1)
+        self.d_cv2 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=2, dilation=2) 
+        self.d_cv3 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=4, dilation=4)
+
+        self.d_cv1.weight = self.weight
+        self.d_cv2.weight = self.weight
+        self.d_cv3.weight = self.weight
+
+        self.d_cv1.bias   = self.bias
+        self.d_cv2.bias   = self.bias
+        self.d_cv3.bias   = self.bias
         
         # Fusion layer with optional downsampling
-        self.fusion = nn.Conv2d(3 * c2, c2, kernel_size=k, stride=s, padding=k//2, bias=False)
+        self.fusion = nn.Conv2d(3 * mid_channels, c2, kernel_size=k, stride=s, padding=k//2, bias=False)
         self.bn_fusion = nn.BatchNorm2d(c2)
 
         self.act = nn.SiLU()
@@ -44,36 +59,47 @@ class BPS(nn.Module):
 
 # PMD-CFEM 
 class PMD_CFEM(nn.Module):
-    def __init__(self, in_channels, out_channels, mid_channels=None):
+    def __init__(self, c1, c2):
         super(PMD_CFEM, self).__init__()
 
         # 如果未指定中间通道数，默认缩小一点以减少计算量
-        if mid_channels is None:
-            mid_channels = out_channels // 4
+        mid_channels = c2 // 4
+
+        self.weight = nn.Parameter(torch.randn(mid_channels, c1, 3, 3))
+        self.bias = nn.Parameter(torch.zeros(mid_channels))
+        nn.init.kaiming_normal_(self.weight, mode='fan_out', nonlinearity='relu')
 
         # 1. 输入标准化 (Batch Normalization)
         # 放在最前面，类似 Pre-activation ResNet 的思路
-        self.bn = nn.BatchNorm2d(in_channels)
+        self.bn = nn.BatchNorm2d(c1)
         self.SiLU = nn.SiLU()
 
         # 2. 并行扩张卷积分支 (保持尺寸不变)
-        self.d_cv1 = nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1,  dilation=1)
-        self.d_cv2 = nn.Conv2d(in_channels, mid_channels, kernel_size=5, padding=4,  dilation=2) 
-        self.d_cv3 = nn.Conv2d(in_channels, mid_channels, kernel_size=7, padding=12, dilation=4) 
+        self.d_cv1 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=1,  dilation=1)
+        self.d_cv2 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=2,  dilation=2) 
+        self.d_cv3 = nn.Conv2d(c1, mid_channels, kernel_size=3, padding=4,  dilation=4) 
+
+        self.d_cv1.weight = self.weight
+        self.d_cv2.weight = self.weight
+        self.d_cv3.weight = self.weight
+
+        self.d_cv1.bias   = self.bias
+        self.d_cv2.bias   = self.bias
+        self.d_cv3.bias   = self.bias
         
         # 3. 融合层 (Fusion)
         # 输入通道 = 3个分支 * mid_channels
-        self.fusion = nn.Conv2d(3 * mid_channels, out_channels, kernel_size=1)
-        self.out_norm = nn.BatchNorm2d(out_channels) # 融合后的 BN
+        self.fusion = nn.Conv2d(3 * mid_channels, c2, kernel_size=1)
+        self.out_norm = nn.BatchNorm2d(c2) # 融合后的 BN
 
         # 4. 残差连接处理 (Skip Connection)
         # 如果输入通道 != 输出通道，或者输入尺寸变了（这里步长为1，尺寸应该不变），
         # 我们需要用 1x1 卷积调整输入 x 的形状，以便能够相加。
         self.shortcut = nn.Sequential()
-        if in_channels != out_channels:
+        if c1 != c2:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, bias=False),
-                nn.BatchNorm2d(out_channels)
+                nn.Conv2d(c1, c2, kernel_size=1, stride=1, bias=False),
+                nn.BatchNorm2d(c2)
             )
         
         self.act = nn.SiLU()
