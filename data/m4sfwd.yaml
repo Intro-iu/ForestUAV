@@ -1,0 +1,9 @@
+# M4SFWD dataset config for YOLOv7-format training.
+# Source: https://github.com/Philharmy-Wang/M4SFWD
+
+train: datasets/M4SFWD/images/train
+val: datasets/M4SFWD/images/val
+test: datasets/M4SFWD/images/test
+
+nc: 2
+names: ['fire', 'smoke']

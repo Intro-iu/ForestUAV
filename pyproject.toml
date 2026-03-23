@@ -3,10 +3,25 @@ name = "yolov7"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = [    
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "ipython",
+    "matplotlib>=3.8.0",
+    "numpy>=1.26.4,<2.0.0",
+    "opencv-python>=4.1.1",
+    "pandas>=2.2.0",
+    "Pillow>=7.1.2",
+    "protobuf>=4.25.3,<6.0.0",
+    "psutil",
+    "PyYAML>=5.3.1",
+    "requests>=2.23.0",
+    "scipy>=1.11.4",
+    "seaborn>=0.11.0",
+    "tensorboard>=2.4.1",
+    "thop",
     "torch==2.9.0+cu130",
     "torchvision==0.24.0+cu130",
+    "tqdm>=4.41.0",
 ]
 
 [tool.uv.sources]

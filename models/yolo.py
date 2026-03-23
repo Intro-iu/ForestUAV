@@ -733,7 +733,7 @@ class Model(nn.Module):
         model_info(self, verbose, img_size)
 
 
-from models.custom_modules import BPS, PMD_CFEM, MSDS_FM
+from models.custom_modules import BPS, DDCA, MS_PBSA, MSDS_FM, PMD_CFEM
 
 def parse_model(d, ch):  # model_dict, input_channels(3)
     logger.info('\n%3s%18s%3s%10s  %-40s%-30s' % ('', 'from', 'n', 'params', 'module', 'arguments'))
@@ -762,7 +762,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                  Ghost, GhostCSPA, GhostCSPB, GhostCSPC,
                  SwinTransformerBlock, STCSPA, STCSPB, STCSPC,
                  SwinTransformer2Block, ST2CSPA, ST2CSPB, ST2CSPC,
-                 BPS, PMD_CFEM, MSDS_FM]:
+                 BPS, PMD_CFEM, MSDS_FM, DDCA, MS_PBSA]:
             c1, c2 = ch[f], args[0]
             if c2 != no:  # if not output
                 c2 = make_divisible(c2 * gw, 8)
