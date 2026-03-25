@@ -43,7 +43,18 @@ def resolve_path(path_str):
 
 def default_weight_path(mode):
     train_name = MODE_DEFAULTS[mode]["train_name"]
-    return PROJECT_ROOT / "runs" / "train" / train_name / "weights" / "best.pt"
+    train_root = PROJECT_ROOT / "runs" / "train"
+    candidates = []
+
+    for run_dir in train_root.glob(f"{train_name}*"):
+        best_pt = run_dir / "weights" / "best.pt"
+        if run_dir.is_dir() and best_pt.exists():
+            candidates.append(best_pt)
+
+    if not candidates:
+        return train_root / train_name / "weights" / "best.pt"
+
+    return max(candidates, key=lambda p: p.stat().st_mtime)
 
 
 def build_common_train_args(args, mode_cfg):
@@ -216,7 +227,13 @@ def validate_inputs(args):
             if not weight_path.exists():
                 print(f"[run_experiment] warning: weights not found yet: {weight_path}")
     elif args.command in {"eval", "infer"}:
-        print(f"[run_experiment] default weights: {default_weight_path(args.mode)}")
+        resolved_weight = default_weight_path(args.mode)
+        print(f"[run_experiment] default weights: {resolved_weight}")
+        if not resolved_weight.exists():
+            raise FileNotFoundError(
+                f"No trained weights were found for mode '{args.mode}'. "
+                f"Expected something like: {resolved_weight}"
+            )
 
 
 def main():
